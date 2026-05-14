@@ -12,6 +12,7 @@ gem "connection_pool", "~> 2.4"
 gem "sidekiq", "~> 7.3"
 
 gem "rack-cors"
+gem "csv"
 
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 

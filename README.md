@@ -1,8 +1,8 @@
 # semantic-search-rails
 
-Proof of concept for [noplisu.com](https://noplisu.com) and portfolio [github.com/fractalsoft](https://github.com/fractalsoft): a **Rails API** with semantic search on PostgreSQL (**pgvector**), the [**neighbor**](https://github.com/ankane/neighbor) gem, and **OpenAI `text-embedding-3-small`** embeddings (1536 dimensions).
+Proof of concept for [noplisu.com](https://noplisu.com) and portfolio [github.com/fractalsoft](https://github.com/fractalsoft): a **Rails API** for discovering books by natural-language “what I want to read,” using PostgreSQL (**pgvector**), the [**neighbor**](https://github.com/ankane/neighbor) gem, and **OpenAI `text-embedding-3-small`** embeddings (1536 dimensions).
 
-Example intent: a query like **“annual tax return”** can surface an article about **PIT-37** with no overlapping keywords, thanks to cosine similarity in embedding space.
+Example intent: a query like **“dystopian surveillance state”** can surface books whose descriptions never use those exact words, thanks to cosine similarity in embedding space.
 
 **Stack:** Ruby on Rails 8.x, PostgreSQL 16 with the `vector` extension, Sidekiq (Redis), Docker Compose (Postgres + Redis).
 
@@ -12,16 +12,17 @@ Example intent: a query like **“annual tax return”** can surface an article 
 
 ## Architecture
 
-1. **`Article` model** — `title`, `body`, and an `embedding` column of type `vector(1536)` (nullable until the vector is stored).
-2. **`GenerateEmbeddingJob`** (Sidekiq / Active Job) — the only path that writes embeddings: calls the OpenAI API and uses `update_column(:embedding, …)` inside the job. OpenAI is **not** called from `after_save` on the model.
+1. **`Book` model** — `title`, `url`, `description`, optional `genres` (text), and `embedding` of type `vector(1536)` (nullable until the job runs).
+2. **`GenerateEmbeddingJob`** (Sidekiq / Active Job) — the only path that writes embeddings: calls OpenAI and `update_column(:embedding, …)` using **`title` + `description` + `genres`**. OpenAI is **not** called from `after_save` on the model.
 3. **`after_create_commit` callback** — only **enqueues** the job (`perform_later`); no vector generation in the HTTP request.
-4. **Search** — `GET /articles/search?q=…`: computes the query embedding synchronously, then `Article.nearest_neighbors(:embedding, vector, distance: "cosine")` (ordering by pgvector cosine distance).
-5. **`db/structure.sql` instead of `schema.rb`** — `config.active_record.schema_format = :sql`, because ActiveRecord does not dump the `vector` type correctly into `schema.rb`.
-6. **HNSW index** on `embedding` with `vector_cosine_ops` (not IVFFlat).
+4. **Search by description** — `GET /books/search?q=…`: embeds the query once, then `Book.where.not(embedding: nil).nearest_neighbors(:embedding, vector, distance: "cosine").limit(5)`.
+5. **Similar books** — `GET /books/:id/similar`: reuses the book’s stored `embedding` (no OpenAI call); same neighbor query excluding that id, **top 5**. Returns **422** if the book has no embedding yet.
+6. **`db/structure.sql` instead of `schema.rb`** — `config.active_record.schema_format = :sql`, because ActiveRecord does not dump the `vector` type correctly into `schema.rb`.
+7. **HNSW index** on `embedding` with `vector_cosine_ops` (not IVFFlat).
 
 ```
 [ HTTP client ]
-      │  POST /articles
+      │  POST /books
       ▼
 [ Rails ] ──after_create_commit──► [ Redis queue ]
                                         │
@@ -32,13 +33,17 @@ Example intent: a query like **“annual tax return”** can surface an article 
                               [ OpenAI Embeddings API ]
                                         │
                                         ▼
-                              [ UPDATE articles.embedding ]
+                              [ UPDATE books.embedding ]
 
-[ HTTP client ]  GET /articles/search?q=...
+[ HTTP client ]  GET /books/search?q=...
       ▼
 [ EmbeddingService ] → OpenAI (query vector)
       ▼
-[ PostgreSQL + pgvector + neighbor ] → nearest neighbors (cosine)
+[ PostgreSQL + pgvector + neighbor ] → top 5 neighbors (cosine)
+
+[ HTTP client ]  GET /books/:id/similar
+      ▼
+[ Book.embedding ] → neighbor search → top 5 other books
 ```
 
 ---
@@ -81,9 +86,14 @@ bundle install
 ./bin/db-reset
 ```
 
-The script runs `db:drop`, `db:create`, loads `db/structure.sql` (via host `psql` or `docker compose exec` when `psql` is missing), then `db:seed` — **20 sample articles in English**.
+The script runs `db:drop`, `db:create`, loads `db/structure.sql`, then `db:seed`.
 
-If `OPENAI_API_KEY` is set, the seed also runs `GenerateEmbeddingJob.perform_now` for each row (no double enqueue thanks to `DISABLE_EMBEDDING_CALLBACKS` during bulk insert).
+Seeds load from **[db/book_details.csv](db/book_details.csv)** (Goodreads-style rows: `title`, `url`, `description`, `genres`).
+
+- **Default:** first **200** rows (keeps local OpenAI cost and seed time reasonable). Override with `BOOK_SEED_LIMIT=500` (example).
+- **Full CSV:** set **`BOOK_SEED_FULL=1`** to load every row (large; many OpenAI calls if `OPENAI_API_KEY` is set).
+
+If `OPENAI_API_KEY` is set, the seed runs `GenerateEmbeddingJob.perform_now` per book after bulk insert (`DISABLE_EMBEDDING_CALLBACKS` avoids double enqueue during `create!`).
 
 ### 4. Application processes
 
@@ -93,38 +103,43 @@ Use two terminals:
 # API (e.g. port 3000)
 bin/rails server
 
-# Sidekiq worker (embeddings after POST /articles)
+# Sidekiq worker (embeddings after POST /books)
 bundle exec sidekiq
 ```
 
-Without Sidekiq, new articles stay without an `embedding` until jobs are run manually.
+Without Sidekiq, new books stay without an `embedding` until jobs are run manually.
 
 ---
 
 ## API (JSON)
 
-Use header `Content-Type: application/json` for JSON bodies.
+Use header `Content-Type: application/json` for JSON bodies on `POST`.
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/articles` | List articles |
-| `GET` | `/articles/:id` | Single article |
-| `POST` | `/articles` | Create (`article: { title, body }`) — enqueues embedding job |
-| `GET` | `/articles/search?q=text` | Semantic search (requires `OPENAI_API_KEY`) |
+| `GET` | `/books` | List books |
+| `GET` | `/books/:id` | Single book |
+| `POST` | `/books` | Create (`book: { title, url, description, genres? }`) — enqueues embedding job |
+| `GET` | `/books/search?q=text` | Semantic match by what you want to read (**5** results; requires `OPENAI_API_KEY`) |
+| `GET` | `/books/:id/similar` | **5** books similar to this one (uses stored embedding; **422** if not ready) |
 
 Examples:
 
 ```bash
-curl -s "http://localhost:3000/articles/search?q=annual tax return filing"
+curl -s "http://localhost:3000/books/search?q=magical school coming of age"
 ```
 
 ```bash
-curl -s -X POST http://localhost:3000/articles \
-  -H "Content-Type: application/json" \
-  -d '{"article":{"title":"Title","body":"Body text to index."}}'
+curl -s "http://localhost:3000/books/1/similar"
 ```
 
-Search responses include `cosine_distance` and `cosine_similarity` (from neighbor search: lower distance means closer in semantic space).
+```bash
+curl -s -X POST http://localhost:3000/books \
+  -H "Content-Type: application/json" \
+  -d '{"book":{"title":"Example","url":"https://example.com/b/1","description":"A short synopsis for indexing."}}'
+```
+
+Search and similar responses include `cosine_distance` and `cosine_similarity` when relevant (lower distance means closer in semantic space).
 
 ---
 
@@ -144,7 +159,7 @@ docker compose exec -T postgres pg_dump -U postgres --schema-only --no-privilege
   semantic_search_rails_development > db/structure.sql
 ```
 
-Ensure the file contains the migration version row in `schema_migrations` (this repo includes an `INSERT` for `20250513120000` — update when you add migrations).
+Ensure the file contains **`schema_migrations`** rows for every applied migration (this repo includes `20250513120000` and `20250514120000` — add new `INSERT` lines when you add migrations).
 
 ---
 

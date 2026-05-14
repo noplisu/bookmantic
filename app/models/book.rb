@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
-class Article < ApplicationRecord
+class Book < ApplicationRecord
   has_neighbors :embedding
 
   validates :title, presence: true
-  validates :body, presence: true
+  validates :url, presence: true
+  validates :description, presence: true
 
   after_create_commit :enqueue_embedding_generation,
     unless: -> { ActiveModel::Type::Boolean.new.cast(ENV["DISABLE_EMBEDDING_CALLBACKS"]) }

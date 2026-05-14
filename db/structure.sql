@@ -47,13 +47,15 @@ CREATE TABLE public.ar_internal_metadata (
 
 
 --
--- Name: articles; Type: TABLE; Schema: public; Owner: -
+-- Name: books; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.articles (
+CREATE TABLE public.books (
     id bigint NOT NULL,
     title character varying NOT NULL,
-    body text NOT NULL,
+    url character varying NOT NULL,
+    description text NOT NULL,
+    genres text,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
     embedding public.vector(1536)
@@ -61,10 +63,10 @@ CREATE TABLE public.articles (
 
 
 --
--- Name: articles_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: books_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE public.articles_id_seq
+CREATE SEQUENCE public.books_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -73,10 +75,10 @@ CREATE SEQUENCE public.articles_id_seq
 
 
 --
--- Name: articles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: books_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE public.articles_id_seq OWNED BY public.articles.id;
+ALTER SEQUENCE public.books_id_seq OWNED BY public.books.id;
 
 
 --
@@ -89,10 +91,10 @@ CREATE TABLE public.schema_migrations (
 
 
 --
--- Name: articles id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: books id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.articles ALTER COLUMN id SET DEFAULT nextval('public.articles_id_seq'::regclass);
+ALTER TABLE ONLY public.books ALTER COLUMN id SET DEFAULT nextval('public.books_id_seq'::regclass);
 
 
 --
@@ -104,11 +106,11 @@ ALTER TABLE ONLY public.ar_internal_metadata
 
 
 --
--- Name: articles articles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: books books_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.articles
-    ADD CONSTRAINT articles_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.books
+    ADD CONSTRAINT books_pkey PRIMARY KEY (id);
 
 
 --
@@ -124,16 +126,16 @@ ALTER TABLE ONLY public.schema_migrations
 --
 
 INSERT INTO public.schema_migrations (version) VALUES ('20250513120000');
+INSERT INTO public.schema_migrations (version) VALUES ('20250514120000');
 
 
 --
--- Name: index_articles_on_embedding_hnsw; Type: INDEX; Schema: public; Owner: -
+-- Name: index_books_on_embedding_hnsw; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX index_articles_on_embedding_hnsw ON public.articles USING hnsw (embedding public.vector_cosine_ops);
+CREATE INDEX index_books_on_embedding_hnsw ON public.books USING hnsw (embedding public.vector_cosine_ops);
 
 
 --
 -- PostgreSQL database dump complete
 --
-
