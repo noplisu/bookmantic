@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Full database reset: drop, create, load db/structure.sql, seed.
+# If `psql` is not installed on the host, loads structure via `docker compose exec`.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+load_structure() {
+  local dbname="$1"
+  if command -v psql >/dev/null 2>&1; then
+    psql "postgresql://${DATABASE_USER:-postgres}:${DATABASE_PASSWORD:-postgres}@${DATABASE_HOST:-localhost}:${DATABASE_PORT:-5432}/${dbname}" \
+      -v ON_ERROR_STOP=1 -f db/structure.sql
+  else
+    docker compose exec -T postgres \
+      psql -U "${DATABASE_USER:-postgres}" -v ON_ERROR_STOP=1 -d "$dbname" < db/structure.sql
+  fi
+}
+
+bin/rails db:drop db:create
+load_structure "semantic_search_rails_development"
+load_structure "semantic_search_rails_test"
+bin/rails db:seed

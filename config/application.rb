@@ -40,5 +40,8 @@ module SemanticSearchRails
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+
+    # ActiveRecord does not dump the `vector` type into schema.rb — use SQL structure dumps.
+    config.active_record.schema_format = :sql
   end
 end
