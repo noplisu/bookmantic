@@ -1,21 +1,34 @@
 #!/usr/bin/env bash
 # Full database reset: drop, create, load db/structure.sql, seed.
-# If `psql` is not installed on the host, loads structure via `docker compose exec`.
+# Uses Rails for all DB access so structure and seeds hit the same Postgres as the app.
+# Requires `psql` on PATH (Rails db:schema:load invokes it with DATABASE_* from .env).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-load_structure() {
-  local dbname="$1"
-  if command -v psql >/dev/null 2>&1; then
-    psql "postgresql://${DATABASE_USER:-postgres}:${DATABASE_PASSWORD:-postgres}@${DATABASE_HOST:-localhost}:${DATABASE_PORT:-5432}/${dbname}" \
-      -v ON_ERROR_STOP=1 -f db/structure.sql
-  else
-    docker compose exec -T postgres \
-      psql -U "${DATABASE_USER:-postgres}" -v ON_ERROR_STOP=1 -d "$dbname" < db/structure.sql
-  fi
+if ! command -v psql >/dev/null 2>&1; then
+  echo "db-reset: 'psql' is required (install postgresql-client)." >&2
+  echo "  Rails loads db/structure.sql via psql using the same host/port as config/database.yml." >&2
+  echo "  Do not load structure only through 'docker compose exec' unless Rails uses that same instance." >&2
+  exit 1
+fi
+
+wipe_public_schema() {
+  local env="$1"
+  RAILS_ENV="$env" bin/rails runner "
+    conn = ActiveRecord::Base.connection
+    conn.execute('DROP SCHEMA IF EXISTS public CASCADE')
+    conn.execute('CREATE SCHEMA public')
+    conn.execute('GRANT ALL ON SCHEMA public TO postgres')
+    conn.execute('GRANT ALL ON SCHEMA public TO public')
+  "
 }
 
 bin/rails db:drop db:create
-load_structure "semantic_search_rails_development"
-load_structure "semantic_search_rails_test"
+
+for env in development test; do
+  echo "Loading structure into ${env}…"
+  wipe_public_schema "$env"
+  RAILS_ENV="$env" bin/rails db:schema:load
+done
+
 bin/rails db:seed

@@ -6,7 +6,19 @@ Example intent: a query like **“dystopian surveillance state”** can surface 
 
 **Stack:** Ruby on Rails 8.x, PostgreSQL 16 with the `vector` extension, Sidekiq (Redis), Docker Compose (Postgres + Redis).
 
-**Out of scope for this MVP:** frontend, authentication, pagination, fine-tuning, multilingual routing.
+**Out of scope for this MVP:** authentication, pagination, fine-tuning, multilingual routing. A separate **Next.js + HeroUI** app lives in [`../frontend/`](../frontend/); see that README for CORS and ports.
+
+---
+
+## Frontend (optional)
+
+The repo includes [`../frontend/`](../frontend/) (Next.js on port **3001** by default). Set in `.env`:
+
+```bash
+CORS_ORIGINS=http://localhost:3001
+```
+
+so the browser can call this API from the dev UI.
 
 ---
 
@@ -54,7 +66,11 @@ Example intent: a query like **“dystopian surveillance state”** can surface 
 - Bundler
 - Docker + Docker Compose (recommended for Postgres with pgvector and Redis)
 
-Optional on the host: `postgresql-client` (`psql`, `pg_dump`) — simplifies `bin/rails db:structure:load` / `db:structure:dump`. Without it, use `./bin/db-reset` (loads `structure.sql` via the Postgres container).
+**Required for `./bin/db-reset`:** `postgresql-client` (`psql` on your `PATH`). Rails loads `db/structure.sql` through `psql` using the same `DATABASE_*` settings as the app.
+
+Use **one** Postgres on port `5432`. If a local Postgres and Docker both bind `5432`, Rails and manual `docker compose exec psql` can talk to **different** servers — symptoms include `relation "ar_internal_metadata" already exists` or `pending migrations` after a reset. Stop the extra instance or change `DATABASE_PORT` / Compose port mapping so everything matches.
+
+After `db:create`, Rails may create `ar_internal_metadata` / `schema_migrations` before `structure.sql` runs. The reset script drops and recreates the `public` schema via Rails, then runs `db:schema:load`, so those errors are avoided.
 
 ---
 
@@ -80,6 +96,8 @@ docker compose up -d
 Starts **PostgreSQL 16 + pgvector** and **Redis** (default ports `5432` and `6379` per `compose.yaml` and `.env.example`).
 
 ### 3. Database and seed
+
+Ensure Postgres is available the same way Rails will use it: **`docker compose up -d`** from `backend/` (with `DATABASE_HOST=localhost` in `.env`) is the usual setup. Install **`postgresql-client`** on the host so `./bin/db-reset` can run `psql` against that same instance.
 
 ```bash
 bundle install
