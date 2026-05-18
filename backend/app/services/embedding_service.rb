@@ -8,9 +8,14 @@ class EmbeddingService
   class ConfigurationError < Error; end
 
   class << self
+    # OpenAI embedding models cap input length; avoid hard failures on huge OL descriptions.
+    MAX_EMBED_CHARS = 50_000
+
     def embed!(text)
       input = text.to_s.strip
       raise Error, "Text to embed is empty." if input.blank?
+
+      input = input[0, MAX_EMBED_CHARS] if input.length > MAX_EMBED_CHARS
 
       response = client.embeddings(
         parameters: {

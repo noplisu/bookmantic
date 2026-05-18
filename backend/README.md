@@ -106,12 +106,44 @@ bundle install
 
 The script runs `db:drop`, `db:create`, loads `db/structure.sql`, then `db:seed`.
 
-Seeds load from **[db/book_details.csv](db/book_details.csv)** (Goodreads-style rows: `title`, `url`, `description`, `genres`).
+**Seed CSV (first match wins):**
 
-- **Default:** first **200** rows (keeps local OpenAI cost and seed time reasonable). Override with `BOOK_SEED_LIMIT=500` (example).
-- **Full CSV:** set **`BOOK_SEED_FULL=1`** to load every row (large; many OpenAI calls if `OPENAI_API_KEY` is set).
+1. Path from **`BOOK_SEED_PATH`** (relative to `backend/`), if set  
+2. Else **`db/books_top40k.csv`** if that file exists (generated export from Open Library — see below)  
+3. Else **`db/book_details.csv`** (small Goodreads-style sample shipped in the repo)
 
-If `OPENAI_API_KEY` is set, the seed runs `GenerateEmbeddingJob.perform_now` per book after bulk insert (`DISABLE_EMBEDDING_CALLBACKS` avoids double enqueue during `create!`).
+Columns: `title`, `url`, `description`, `genres` (genres optional).
+
+- **Default:** first **200** rows (fast dev). Set **`BOOK_SEED_FULL=1`** to load the whole CSV.  
+- **`BOOK_SEED_BATCH_SIZE`:** insert batch size for `insert_all` (default `500`).
+
+If **`OPENAI_API_KEY`** is set at seed time, the seed **enqueues** `GenerateEmbeddingJob` for every inserted book (via Sidekiq). It does **not** run embeddings inline. Start **`bundle exec sidekiq`** before or right after seeding. For ~40k books plan on a long queue and OpenAI rate limits.
+
+Re-queue missing embeddings anytime:
+
+```bash
+bin/rails books:enqueue_embeddings
+```
+
+#### Open Library ~40k export (edition popularity + full descriptions)
+
+1. Download the **editions** dump for the same monthly release as the **works** dump (see [Open Library data dumps](https://openlibrary.org/developers/dumps)). Example names: `ol_dump_editions_YYYY-MM-DD.txt.gz`, `ol_dump_works_YYYY-MM-DD.txt`.  
+2. From the **repo root**, run (paths adjusted to your files):
+
+```bash
+python3 scripts/export_ol_top_books.py \
+  --editions /path/to/ol_dump_editions_2026-04-30.txt.gz \
+  --works /path/to/ol_dump_works_2026-04-30.txt \
+  --out backend/db/books_top40k.csv \
+  --target-rows 40000 \
+  --top-work-pool 120000
+```
+
+The script streams both files (gzip supported), counts **editions per work**, takes the top `--top-work-pool` works, then scans the works dump for those keys with a non-empty **description**. If fewer than `--target-rows` match, increase `--top-work-pool` or lower `--min-description-length`.
+
+Respect Open Library [Bulk Data](https://openlibrary.org/developers/dumps) / attribution expectations for public use.
+
+Generated **`backend/db/books_top40k.csv`** is gitignored (large). Commit only the script under `scripts/`.
 
 ### 4. Application processes
 
