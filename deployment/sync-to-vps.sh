@@ -13,6 +13,7 @@
 #
 # Environment:
 #   VPS_USER, VPS_HOST     Target (if user@host not passed)
+#   SSH_IDENTITY_FILE      Private key path (e.g. ~/.ssh/bookmatic_deploy)
 #   REMOTE_DEPLOY_DIR      Remote directory (default: /opt/semantic-search-rails/deployment)
 set -euo pipefail
 
@@ -53,6 +54,15 @@ fi
 
 REMOTE_DIR="${REMOTE_DEPLOY_DIR:-/opt/semantic-search-rails/deployment}"
 
+SSH_OPTS=()
+if [[ -n "${SSH_IDENTITY_FILE:-}" ]]; then
+  SSH_OPTS=(-i "${SSH_IDENTITY_FILE}" -o IdentitiesOnly=yes)
+fi
+RSYNC_SSH="ssh"
+if [[ ${#SSH_OPTS[@]} -gt 0 ]]; then
+  RSYNC_SSH="ssh ${SSH_OPTS[*]}"
+fi
+
 FILES=(compose.yaml Caddyfile)
 if [[ "$CONFIG_ONLY" == false ]]; then
   if [[ -f "${DEPLOY_DIR}/.env" ]]; then
@@ -73,12 +83,12 @@ for f in "${FILES[@]}"; do
 done
 
 echo "Syncing ${FILES[*]} → ${TARGET}:${REMOTE_DIR}/"
-ssh "$TARGET" "mkdir -p '${REMOTE_DIR}'"
+ssh "${SSH_OPTS[@]}" "$TARGET" "mkdir -p '${REMOTE_DIR}'"
 
 if command -v rsync >/dev/null 2>&1; then
-  rsync -avz "${PATHS[@]}" "${TARGET}:${REMOTE_DIR}/"
+  rsync -avz -e "${RSYNC_SSH}" "${PATHS[@]}" "${TARGET}:${REMOTE_DIR}/"
 else
-  scp "${PATHS[@]}" "${TARGET}:${REMOTE_DIR}/"
+  scp "${SSH_OPTS[@]}" "${PATHS[@]}" "${TARGET}:${REMOTE_DIR}/"
 fi
 
 echo "Done."
