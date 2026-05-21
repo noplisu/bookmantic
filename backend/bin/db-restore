@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# Restore a pg_dump -Fc file produced by bin/db-dump into the target database.
+# Default input: <repo>/data/dumps/semantic_search_rails_prepared.dump
+set -euo pipefail
+
+BACKEND_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+REPO_ROOT="$(cd "${BACKEND_ROOT}/.." && pwd)"
+cd "${BACKEND_ROOT}"
+
+if [[ -n "${BOOK_DATA_ROOT:-}" ]]; then
+  if [[ "${BOOK_DATA_ROOT}" = /* ]]; then
+    DATA_DIR="${BOOK_DATA_ROOT}"
+  else
+    DATA_DIR="${REPO_ROOT}/${BOOK_DATA_ROOT}"
+  fi
+else
+  DATA_DIR="${REPO_ROOT}/data"
+fi
+DUMPS_DIR="${DATA_DIR}/dumps"
+DEFAULT_DUMP="${DUMPS_DIR}/semantic_search_rails_prepared.dump"
+
+if [[ -f .env ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source .env
+  set +a
+fi
+
+RAILS_ENV="${RAILS_ENV:-development}"
+DB_HOST="${DATABASE_HOST:-localhost}"
+DB_PORT="${DATABASE_PORT:-5432}"
+DB_USER="${DATABASE_USER:-postgres}"
+DB_PASSWORD="${DATABASE_PASSWORD:-postgres}"
+
+case "$RAILS_ENV" in
+  development) DB_NAME="${DATABASE_NAME:-semantic_search_rails_development}" ;;
+  test) DB_NAME="${DATABASE_NAME:-semantic_search_rails_test}" ;;
+  production) DB_NAME="${DATABASE_NAME:-semantic_search_rails_production}" ;;
+  *) echo "db-restore: unsupported RAILS_ENV=$RAILS_ENV" >&2; exit 1 ;;
+esac
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  cat <<EOF
+Usage: bin/db-restore [dump-file]
+
+Restore schema + data from bin/db-dump output (pg_restore custom format).
+
+Environment:
+  RAILS_ENV, DATABASE_* (same as Rails)
+  BOOK_DATA_ROOT (optional; default: ${REPO_ROOT}/data)
+
+Default dump file: ${DEFAULT_DUMP}
+
+On a fresh host, create the database first, e.g.:
+
+  docker compose up -d postgres
+  RAILS_ENV=production DATABASE_NAME=semantic_search_rails_production bin/rails db:create
+  bin/db-restore
+EOF
+  exit 0
+fi
+
+if [[ -n "${1:-}" ]]; then
+  if [[ "${1}" = /* ]]; then
+    DUMP_FILE="${1}"
+  else
+    DUMP_FILE="${BACKEND_ROOT}/${1}"
+  fi
+else
+  DUMP_FILE="${DEFAULT_DUMP}"
+fi
+
+if [[ ! -f "${DUMP_FILE}" ]]; then
+  echo "db-restore: file not found: ${DUMP_FILE}" >&2
+  echo "  Run bin/db-dump first, or pass the path to a .dump file." >&2
+  exit 1
+fi
+
+if ! command -v pg_restore >/dev/null 2>&1; then
+  echo "db-restore: pg_restore is required (install postgresql-client)." >&2
+  exit 1
+fi
+
+export PGPASSWORD="$DB_PASSWORD"
+
+echo "Restoring ${DUMP_FILE} → ${DB_NAME}@${DB_HOST}:${DB_PORT} (RAILS_ENV=${RAILS_ENV}) …"
+pg_restore -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" \
+  --clean --if-exists --no-owner --no-acl \
+  "${DUMP_FILE}"
+
+book_count="$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -tAc \
+  "SELECT COUNT(*) FROM books WHERE embedding IS NOT NULL" 2>/dev/null || echo "?")"
+echo "Restore complete. Books with embeddings: ${book_count}"

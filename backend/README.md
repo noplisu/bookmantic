@@ -106,13 +106,13 @@ bundle install
 
 The script runs `db:drop`, `db:create`, loads `db/structure.sql`, then `db:seed`.
 
-**Seed CSV (first match wins):**
+**Seed CSV (first match wins)** — files live under **[`../data/processed/`](../data/processed/)** (see [`data/README.md`](../data/README.md)):
 
-1. Path from **`BOOK_SEED_PATH`** (relative to `backend/`), if set  
-2. Else **`db/books_top40k.csv`** if that file exists (generated export from Open Library — see below)  
-3. Else **`db/book_details.csv`** (small Goodreads-style sample shipped in the repo)
+1. Path from **`BOOK_SEED_PATH`** (absolute or relative to `backend/`), if set
+2. Else **`data/processed/books_top45k.csv`**, then **`books_top40k.csv`**
+3. Else **`data/processed/book_details.csv`** (small sample shipped in the repo)
 
-Columns: `title`, `url`, `description`, `genres` (genres optional).
+Override data root with **`BOOK_DATA_ROOT`** (default: repo `data/`). Columns: `title`, `url`, `description`, `genres`, optional `category`.
 
 - **Default:** first **200** rows (fast dev). Set **`BOOK_SEED_FULL=1`** to load the whole CSV.  
 - **`BOOK_SEED_BATCH_SIZE`:** insert batch size for `insert_all` (default `500`).
@@ -125,25 +125,71 @@ Re-queue missing embeddings anytime:
 bin/rails books:enqueue_embeddings
 ```
 
-#### Open Library ~40k export (edition popularity + full descriptions)
+#### Blended ~45k export (curated classics/learning + OL quotas)
 
-1. Download the **editions** dump for the same monthly release as the **works** dump (see [Open Library data dumps](https://openlibrary.org/developers/dumps)). Example names: `ol_dump_editions_YYYY-MM-DD.txt.gz`, `ol_dump_works_YYYY-MM-DD.txt`.  
-2. From the **repo root**, run (paths adjusted to your files):
+1. Download the **editions** and **works** dumps for the same monthly release ([Open Library data dumps](https://openlibrary.org/developers/dumps)).
+2. From the **repo root** (paths adjusted to your files):
+
+Download or place OL dumps in **`data/raw/`** (gitignored):
 
 ```bash
-python3 scripts/export_ol_top_books.py \
-  --editions /path/to/ol_dump_editions_2026-04-30.txt.gz \
-  --works /path/to/ol_dump_works_2026-04-30.txt \
-  --out backend/db/books_top40k.csv \
-  --target-rows 40000 \
-  --top-work-pool 120000
+python3 scripts/download_ol_dumps.py
 ```
 
-The script streams both files (gzip supported), counts **editions per work**, takes the top `--top-work-pool` works, then scans the works dump for those keys with a non-empty **description**. If fewer than `--target-rows` match, increase `--top-work-pool` or lower `--min-description-length`.
+Generated CSVs and DB dumps go under **`data/processed/`** and **`data/dumps/`**.
 
-Respect Open Library [Bulk Data](https://openlibrary.org/developers/dumps) / attribution expectations for public use.
+```bash
+# Resolve curated manifest → full rows with descriptions (defaults use data/)
+python3 scripts/resolve_curated_works.py
 
-Generated **`backend/db/books_top40k.csv`** is gitignored (large). Commit only the script under `scripts/`.
+# Blended export: curated + learning/fiction/nonfiction/popular quotas
+python3 scripts/export_ol_top_books.py --target-rows 45000
+
+# Quality gate before seed/embed
+python3 scripts/validate_book_export.py
+```
+
+**Curated layer:** [`data/processed/curated_manifest.tsv`](../data/processed/curated_manifest.tsv) (committed) lists classics and learning anchors; the resolver writes `curated_books.csv`.
+
+**OL layer:** edition-ranked pools with filters (drops juvenile, dictionaries, large-type, etc.) and quotas (`--quota-learning` 10k, `--quota-fiction` 15k, `--quota-nonfiction` 12k, `--quota-fill` 5k). Optional `--english-only`.
+
+CSV columns: `title`, `url`, `description`, `genres`, `category`. Large exports are gitignored under `data/processed/`. Respect Open Library [Bulk Data](https://openlibrary.org/developers/dumps) / attribution for public use.
+
+Seed with `BOOK_SEED_FULL=1 ./bin/db-reset` (prefers `data/processed/books_top45k.csv`).
+
+**Merge on top of an existing database** (keeps current rows and embeddings; inserts only new URLs):
+
+```bash
+bin/rails db:migrate   # if books.category is not applied yet
+BOOK_SEED_FULL=1 bin/rails books:import_csv
+```
+
+Optional: `BOOK_IMPORT_UPDATE=1` updates `category` / `genres` on rows that already exist (does not re-embed).
+
+#### Staging: ship a prepared database (skip re-seed + embeddings)
+
+After seeding and Sidekiq have filled **`books.embedding`** locally, dump once and restore on staging:
+
+```bash
+# Local (uses DATABASE_* from .env — same Postgres as Rails, not necessarily docker exec)
+./bin/db-dump
+# → data/dumps/semantic_search_rails_prepared.dump (~300MB+ for 45k books)
+```
+
+Copy the `.dump` file to staging (S3, scp, etc.; it is gitignored under `data/dumps/`). On the staging host, use **PostgreSQL 16 + pgvector**, create an empty database, then:
+
+```bash
+# Example: staging .env points DATABASE_* at your managed Postgres
+RAILS_ENV=production DATABASE_NAME=semantic_search_rails_production bin/rails db:create
+RAILS_ENV=production DATABASE_NAME=semantic_search_rails_production bin/db-restore
+# or: bin/db-restore /path/to/semantic_search_rails_prepared.dump
+```
+
+Both scripts default to **`BOOK_DATA_ROOT/data/dumps/`** (repo `data/` when unset), same as seed CSV paths.
+
+`bin/db-restore` runs `pg_restore --clean --if-exists` (schema, data, indexes including HNSW). You still need **`OPENAI_API_KEY`** for search queries (query embedding at request time), not for serving existing book vectors.
+
+Requires **`pg_dump`** / **`pg_restore`** on PATH (`postgresql-client`). Override output path: `./bin/db-dump /path/to/custom.dump`.
 
 ### 4. Application processes
 
@@ -209,7 +255,7 @@ docker compose exec -T postgres pg_dump -U postgres --schema-only --no-privilege
   semantic_search_rails_development > db/structure.sql
 ```
 
-Ensure the file contains **`schema_migrations`** rows for every applied migration (this repo includes `20250513120000` and `20250514120000` — add new `INSERT` lines when you add migrations).
+Ensure the file contains **`schema_migrations`** rows for every applied migration (this repo includes `20250513120000`, `20250514120000`, and `20250519120000` — add new `INSERT` lines when you add migrations).
 
 ---
 

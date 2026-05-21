@@ -68,7 +68,7 @@ class BooksController < ApplicationController
   private
 
   def book_params
-    params.require(:book).permit(:title, :url, :description, :genres)
+    params.require(:book).permit(:title, :url, :description, :genres, :category)
   end
 
   def book_json(book, include_distance: false)
@@ -78,6 +78,7 @@ class BooksController < ApplicationController
       url: book.url,
       description: book.description,
       genres: book.genres,
+      category: book.category,
       created_at: book.created_at,
       updated_at: book.updated_at,
       embedding_ready: book.embedding.present?

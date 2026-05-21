@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+# Dump the Rails database (schema + data, including pgvector embeddings) for staging/prod import.
+# Uses DATABASE_* from .env — same Postgres instance as bin/db-reset and the Rails app.
+# Default output: <repo>/data/dumps/semantic_search_rails_prepared.dump
+set -euo pipefail
+
+BACKEND_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+REPO_ROOT="$(cd "${BACKEND_ROOT}/.." && pwd)"
+cd "${BACKEND_ROOT}"
+
+if [[ -n "${BOOK_DATA_ROOT:-}" ]]; then
+  if [[ "${BOOK_DATA_ROOT}" = /* ]]; then
+    DATA_DIR="${BOOK_DATA_ROOT}"
+  else
+    DATA_DIR="${REPO_ROOT}/${BOOK_DATA_ROOT}"
+  fi
+else
+  DATA_DIR="${REPO_ROOT}/data"
+fi
+DUMPS_DIR="${DATA_DIR}/dumps"
+DEFAULT_DUMP="${DUMPS_DIR}/semantic_search_rails_prepared.dump"
+
+if [[ -f .env ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source .env
+  set +a
+fi
+
+RAILS_ENV="${RAILS_ENV:-development}"
+DB_HOST="${DATABASE_HOST:-localhost}"
+DB_PORT="${DATABASE_PORT:-5432}"
+DB_USER="${DATABASE_USER:-postgres}"
+DB_PASSWORD="${DATABASE_PASSWORD:-postgres}"
+
+case "$RAILS_ENV" in
+  development) DB_NAME="${DATABASE_NAME:-semantic_search_rails_development}" ;;
+  test) DB_NAME="${DATABASE_NAME:-semantic_search_rails_test}" ;;
+  production) DB_NAME="${DATABASE_NAME:-semantic_search_rails_production}" ;;
+  *) echo "db-dump: unsupported RAILS_ENV=$RAILS_ENV" >&2; exit 1 ;;
+esac
+
+mkdir -p "${DUMPS_DIR}"
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  cat <<EOF
+Usage: bin/db-dump [output-file]
+
+Dump the current database to a custom-format file (pg_restore -Fc).
+
+Environment:
+  RAILS_ENV (default: development)
+  DATABASE_HOST, DATABASE_PORT, DATABASE_USER, DATABASE_PASSWORD
+  DATABASE_NAME (optional override)
+  BOOK_DATA_ROOT (optional; default: ${REPO_ROOT}/data)
+
+Default output: ${DEFAULT_DUMP}
+EOF
+  exit 0
+fi
+
+if [[ -n "${1:-}" ]]; then
+  if [[ "${1}" = /* ]]; then
+    OUT_FILE="${1}"
+  else
+    OUT_FILE="${BACKEND_ROOT}/${1}"
+  fi
+else
+  OUT_FILE="${DEFAULT_DUMP}"
+fi
+
+if ! command -v pg_dump >/dev/null 2>&1; then
+  echo "db-dump: pg_dump is required (install postgresql-client)." >&2
+  exit 1
+fi
+
+export PGPASSWORD="$DB_PASSWORD"
+
+book_count="$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -tAc \
+  "SELECT COUNT(*) FROM books WHERE embedding IS NOT NULL" 2>/dev/null || echo "0")"
+
+if [[ "${book_count// /}" == "0" ]]; then
+  echo "db-dump: WARNING — no books with embeddings in ${DB_NAME}@${DB_HOST}:${DB_PORT}." >&2
+  echo "  Rails may be using a different Postgres than 'docker compose exec postgres'." >&2
+  echo "  Confirm with: psql -h \$DATABASE_HOST -U \$DATABASE_USER -d \$DATABASE_NAME -c 'SELECT COUNT(*) FROM books;'" >&2
+  if [[ "${DB_DUMP_FORCE:-}" != "1" ]]; then
+    echo "  Set DB_DUMP_FORCE=1 to dump anyway." >&2
+    exit 1
+  fi
+fi
+
+echo "Dumping ${DB_NAME} (${book_count} books with embeddings) → ${OUT_FILE} …"
+pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" \
+  -Fc --no-owner --no-acl \
+  -f "$OUT_FILE"
+
+ls -lh "$OUT_FILE"
+echo "Done. Copy to staging and run: bin/db-restore ${OUT_FILE}"

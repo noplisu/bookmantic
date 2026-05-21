@@ -1,0 +1,356 @@
+category	title	author	work_key
+fiction_classic	Pride and Prejudice	Austen	
+fiction_classic	Jane Eyre	Brontë	
+fiction_classic	Wuthering Heights	Brontë	
+fiction_classic	Moby-Dick	Melville	
+fiction_classic	The Great Gatsby	Fitzgerald	
+fiction_classic	To Kill a Mockingbird	Lee	
+fiction_classic	1984	Orwell	
+fiction_classic	Nineteen Eighty-Four	Orwell	
+fiction_classic	Animal Farm	Orwell	
+fiction_classic	The Catcher in the Rye	Salinger	
+fiction_classic	The Lord of the Rings	Tolkien	
+fiction_classic	The Hobbit	Tolkien	
+fiction_classic	The Fellowship of the Ring	Tolkien	
+fiction_classic	The Two Towers	Tolkien	
+fiction_classic	The Return of the King	Tolkien	
+fiction_classic	Don Quixote	Cervantes	
+fiction_classic	Crime and Punishment	Dostoevsky	
+fiction_classic	The Brothers Karamazov	Dostoevsky	
+fiction_classic	War and Peace	Tolstoy	
+fiction_classic	Anna Karenina	Tolstoy	
+fiction_classic	Madame Bovary	Flaubert	
+fiction_classic	Les Misérables	Hugo	
+fiction_classic	The Count of Monte Cristo	Dumas	
+fiction_classic	Frankenstein	Shelley	
+fiction_classic	Dracula	Stoker	
+fiction_classic	The Picture of Dorian Gray	Wilde	
+fiction_classic	Brave New World	Huxley	
+fiction_classic	The Handmaid's Tale	Atwood	
+fiction_classic	One Hundred Years of Solitude	García Márquez	
+fiction_classic	Love in the Time of Cholera	García Márquez	
+fiction_classic	The Stranger	Camus	
+fiction_classic	The Plague	Camus	
+fiction_classic	The Metamorphosis	Kafka	
+fiction_classic	The Trial	Kafka	
+fiction_classic	The Castle	Kafka	
+fiction_classic	Ulysses	Joyce	
+fiction_classic	A Portrait of the Artist as a Young Man	Joyce	
+fiction_classic	Dubliners	Joyce	
+fiction_classic	Middlemarch	Eliot	
+fiction_classic	Silas Marner	Eliot	
+fiction_classic	Great Expectations	Dickens	
+fiction_classic	A Tale of Two Cities	Dickens	
+fiction_classic	Oliver Twist	Dickens	
+fiction_classic	David Copperfield	Dickens	
+fiction_classic	Bleak House	Dickens	
+fiction_classic	The Adventures of Huckleberry Finn	Twain	
+fiction_classic	The Adventures of Tom Sawyer	Twain	
+fiction_classic	The Scarlet Letter	Hawthorne	
+fiction_classic	Moby Dick	Melville	
+fiction_classic	The Sound and the Fury	Faulkner	
+fiction_classic	As I Lay Dying	Faulkner	
+fiction_classic	The Grapes of Wrath	Steinbeck	
+fiction_classic	Of Mice and Men	Steinbeck	
+fiction_classic	East of Eden	Steinbeck	
+fiction_classic	The Old Man and the Sea	Hemingway	
+fiction_classic	A Farewell to Arms	Hemingway	
+fiction_classic	For Whom the Bell Tolls	Hemingway	
+fiction_classic	The Sun Also Rises	Hemingway	
+fiction_classic	Slaughterhouse-Five	Vonnegut	
+fiction_classic	Cat's Cradle	Vonnegut	
+fiction_classic	Catch-22	Heller	
+fiction_classic	Heart of Darkness	Conrad	
+fiction_classic	Lord of the Flies	Golding	
+fiction_classic	The Bell Jar	Plath	
+fiction_classic	Beloved	Morrison	
+fiction_classic	Song of Solomon	Morrison	
+fiction_classic	The Color Purple	Walker	
+fiction_classic	Their Eyes Were Watching God	Hurston	
+fiction_classic	Invisible Man	Ellison	
+fiction_classic	Native Son	Wright	
+fiction_classic	Things Fall Apart	Achebe	
+fiction_classic	One Flew Over the Cuckoo's Nest	Kesey	
+fiction_classic	The Shining	King	
+fiction_classic	It	King	
+fiction_classic	The Stand	King	
+fiction_classic	Dune	Herbert	
+fiction_classic	Neuromancer	Gibson	
+fiction_classic	Snow Crash	Stephenson	
+fiction_classic	The Hitchhiker's Guide to the Galaxy	Adams	
+fiction_classic	Alice's Adventures in Wonderland	Carroll	
+fiction_classic	Through the Looking-Glass	Carroll	
+fiction_classic	The Wonderful Wizard of Oz	Baum	
+fiction_classic	Little Women	Alcott	
+fiction_classic	Emma	Austen	
+fiction_classic	Sense and Sensibility	Austen	
+fiction_classic	Persuasion	Austen	
+fiction_classic	Mansfield Park	Austen	
+fiction_classic	Northanger Abbey	Austen	
+fiction_classic	Dr. Jekyll and Mr. Hyde	Stevenson	
+fiction_classic	Treasure Island	Stevenson	
+fiction_classic	Robinson Crusoe	Defoe	
+fiction_classic	Gulliver's Travels	Swift	
+fiction_classic	The Iliad	Homer	
+fiction_classic	The Odyssey	Homer	
+fiction_classic	The Aeneid	Virgil	
+fiction_classic	The Divine Comedy	Dante	
+fiction_classic	Paradise Lost	Milton	
+fiction_classic	Hamlet	Shakespeare	
+fiction_classic	Macbeth	Shakespeare	
+fiction_classic	King Lear	Shakespeare	
+fiction_classic	Romeo and Juliet	Shakespeare	
+fiction_classic	Othello	Shakespeare	
+fiction_classic	The Tempest	Shakespeare	
+fiction_classic	A Midsummer Night's Dream	Shakespeare	
+fiction_classic	Faust	Goethe	
+fiction_classic	The Sorrows of Young Werther	Goethe	
+fiction_classic	The Red and the Black	Stendhal	
+fiction_classic	The Charterhouse of Parma	Stendhal	
+fiction_classic	The Three Musketeers	Dumas	
+fiction_classic	Twenty Thousand Leagues Under the Sea	Verne	
+fiction_classic	Journey to the Center of the Earth	Verne	
+fiction_classic	The War of the Worlds	Wells	
+fiction_classic	The Time Machine	Wells	
+fiction_classic	The Invisible Man	Wells	
+fiction_classic	Rebecca	du Maurier	
+fiction_classic	Brideshead Revisited	Waugh	
+fiction_classic	A Passage to India	Forster	
+fiction_classic	Howards End	Forster	
+fiction_classic	A Room with a View	Forster	
+fiction_classic	Mrs Dalloway	Woolf	
+fiction_classic	To the Lighthouse	Woolf	
+fiction_classic	Orlando	Woolf	
+fiction_classic	The Waves	Woolf	
+fiction_classic	Nineteen Eighty-Four	Orwell	
+learn_programming	The C Programming Language	Kernighan	
+learn_programming	Clean Code	Martin	
+learn_programming	The Pragmatic Programmer	Hunt	
+learn_programming	Code Complete	McConnell	
+learn_programming	Design Patterns	Gamma	
+learn_programming	Introduction to Algorithms	Cormen	
+learn_programming	Structure and Interpretation of Computer Programs	Abelson	
+learn_programming	JavaScript: The Good Parts	Crockford	
+learn_programming	You Don't Know JS	Simpson	
+learn_programming	Python Crash Course	Matthes	
+learn_programming	Fluent Python	Ramalho	
+learn_programming	Effective Java	Bloch	
+learn_programming	Head First Java	Sierra	
+learn_programming	The Mythical Man-Month	Brooks	
+learn_programming	Refactoring	Fowler	
+learn_programming	Working Effectively with Legacy Code	Feathers	
+learn_programming	The Clean Coder	Martin	
+learn_programming	Accelerate	Forsgren	
+learn_programming	Designing Data-Intensive Applications	Kleppmann	
+learn_programming	Database System Concepts	Silberschatz	
+learn_programming	Computer Networking	Kurose	
+learn_programming	Operating System Concepts	Silberschatz	
+learn_programming	Compilers: Principles, Techniques, and Tools	Aho	
+learn_programming	Artificial Intelligence: A Modern Approach	Russell	
+learn_programming	Deep Learning	Goodfellow	
+learn_programming	Pattern Recognition and Machine Learning	Bishop	
+learn_programming	The Algorithm Design Manual	Skiena	
+learn_programming	Cracking the Coding Interview	McDowell	
+learn_programming	Programming Pearls	Bentley	
+learn_programming	The Art of Computer Programming	Knuth	
+learn_programming	Hacker's Delight	Warren	
+learn_programming	Code: The Hidden Language of Computer Hardware and Software	Petzold	
+learn_programming	The Phoenix Project	Kim	
+learn_programming	The Unicorn Project	Kim	
+learn_programming	Continuous Delivery	Humble	
+learn_programming	Site Reliability Engineering	Beyer	
+learn_programming	Release It!	Nygard	
+learn_programming	Building Microservices	Newman	
+learn_programming	Domain-Driven Design	Evans	
+learn_programming	Implementing Domain-Driven Design	Vernon	
+learn_programming	Agile Software Development	Martin	
+learn_programming	Test Driven Development: By Example	Beck	
+learn_programming	Growing Object-Oriented Software, Guided by Tests	Freeman	
+learn_programming	Ruby on Rails Tutorial	Hartl	
+learn_programming	Eloquent JavaScript	Haverbeke	
+learn_programming	Learning Python	Lutz	
+learn_programming	Automate the Boring Stuff with Python	Sweigart	
+learn_programming	Black Hat Python	Seitz	
+learn_programming	The Go Programming Language	Donovan	
+learn_programming	Programming in Haskell	Hutton	
+learn_programming	Learn You a Haskell for Great Good!	Lipovača	
+learn_programming	Programming Rust	Blandy	
+learn_programming	The Rust Programming Language	Klabnik	
+learn_programming	C Programming: A Modern Approach	King	
+learn_programming	Head First Design Patterns	Freeman	
+learn_programming	Java Concurrency in Practice	Goetz	
+learn_programming	Effective Modern C++	Meyers	
+learn_programming	The C++ Programming Language	Stroustrup	
+learn_programming	HTML and CSS: Design and Build Websites	Duckett	
+learn_programming	Learning React	Banks	
+learn_programming	Full Stack React	Accomazzo	
+learn_programming	Node.js Design Patterns	Molina	
+learn_finance	The Intelligent Investor	Graham	
+learn_finance	A Random Walk Down Wall Street	Malkiel	
+learn_finance	Security Analysis	Graham	
+learn_finance	The Little Book of Common Sense Investing	Bogle	
+learn_finance	Common Stocks and Uncommon Profits	Fisher	
+learn_finance	One Up on Wall Street	Lynch	
+learn_finance	Beating the Street	Lynch	
+learn_finance	The Essays of Warren Buffett	Buffett	
+learn_finance	The Warren Buffett Way	Hagstrom	
+learn_finance	Rich Dad Poor Dad	Kiyosaki	
+learn_finance	Think and Grow Rich	Hill	
+learn_finance	The Millionaire Next Door	Stanley	
+learn_finance	Your Money or Your Life	Dominguez	
+learn_finance	I Will Teach You to Be Rich	Sethi	
+learn_finance	The Total Money Makeover	Ramsey	
+learn_finance	The Psychology of Money	Housel	
+learn_finance	Flash Boys	Lewis	
+learn_finance	Liar's Poker	Lewis	
+learn_finance	The Big Short	Lewis	
+learn_finance	Too Big to Fail	Sorkin	
+learn_finance	Barbarians at the Gate	Burrough	
+learn_finance	When Genius Failed	Lowenstein	
+learn_finance	The Black Swan	Taleb	
+learn_finance	Fooled by Randomness	Taleb	
+learn_finance	Antifragile	Taleb	
+learn_finance	Against the Gods	Bernstein	
+learn_finance	Capital in the Twenty-First Century	Piketty	
+learn_finance	The Wealth of Nations	Smith	
+learn_finance	The General Theory of Employment, Interest and Money	Keynes	
+learn_finance	Manias, Panics, and Crashes	Kindleberger	
+learn_finance	Extraordinary Popular Delusions and the Madness of Crowds	Mackay	
+learn_finance	The Alchemy of Finance	Soros	
+learn_finance	Market Wizards	Schwager	
+learn_finance	The New Market Wizards	Schwager	
+learn_finance	Reminiscences of a Stock Operator	Lefèvre	
+learn_finance	Technical Analysis of the Financial Markets	Murphy	
+learn_finance	Options, Futures, and Other Derivatives	Hull	
+learn_finance	Principles of Corporate Finance	Brealey	
+learn_finance	Investment Valuation	Damodaran	
+learn_finance	The Handbook of Fixed Income Securities	Frank Fabozzi	
+learn_finance	Credit Risk Modeling	Benninga	
+learn_finance	Personal Finance for Dummies	Tyson	
+learn_finance	The Bogleheads' Guide to Investing	Larimore	
+learn_finance	All About Asset Allocation	Swedroe	
+learn_finance	The Four Pillars of Investing	Bernstein	
+learn_finance	Expected Returns	Antti Ilmanen	
+learn_business	Good to Great	Collins	
+learn_business	Built to Last	Collins	
+learn_business	The Lean Startup	Ries	
+learn_business	Zero to One	Thiel	
+learn_business	The Hard Thing About Hard Things	Horowitz	
+learn_business	Crossing the Chasm	Moore	
+learn_business	Innovator's Dilemma	Christensen	
+learn_business	Blue Ocean Strategy	Kim	
+learn_business	Good Strategy Bad Strategy	Rumelt	
+learn_business	Playing to Win	Lafley	
+learn_business	The Innovator's Solution	Christensen	
+learn_business	Measure What Matters	Doerr	
+learn_business	High Output Management	Grove	
+learn_business	Only the Paranoid Survive	Grove	
+learn_business	The Effective Executive	Drucker	
+learn_business	Management: Tasks, Responsibilities, Practices	Drucker	
+learn_business	Competitive Strategy	Porter	
+learn_business	Competitive Advantage	Porter	
+learn_business	On Competition	Porter	
+learn_business	The Five Dysfunctions of a Team	Lencioni	
+learn_business	Death by Meeting	Lencioni	
+learn_business	Leaders Eat Last	Sinek	
+learn_business	Start with Why	Sinek	
+learn_business	Drive	Pink	
+learn_business	To Sell Is Human	Pink	
+learn_business	How to Win Friends and Influence People	Carnegie	
+learn_business	Think and Grow Rich	Hill	
+learn_business	The 7 Habits of Highly Effective People	Covey	
+learn_business	First Things First	Covey	
+learn_business	Getting Things Done	Allen	
+learn_business	Deep Work	Newport	
+learn_business	So Good They Can't Ignore You	Newport	
+learn_business	Atomic Habits	Clear	
+learn_business	The Power of Habit	Duhigg	
+learn_business	Mindset	Dweck	
+learn_business	Grit	Duckworth	
+learn_business	Thinking, Fast and Slow	Kahneman	
+learn_business	Nudge	Thaler	
+learn_business	Influence: The Psychology of Persuasion	Cialdini	
+learn_business	Pre-Suasion	Cialdini	
+learn_business	Never Split the Difference	Voss	
+learn_business	Crucial Conversations	Patterson	
+learn_business	Dare to Lead	Brown	
+learn_business	The Culture Code	Coyle	
+learn_business	Team of Teams	McChrystal	
+learn_business	The E-Myth Revisited	Gerber	
+learn_business	Traction	Wickman	
+learn_business	Rocket Fuel	Wickman	
+learn_business	Blitzscaling	Hoffman	
+learn_business	The Alliance	Hoffman	
+learn_business	Hooked	Eyal	
+learn_business	Contagious	Berger	
+learn_business	Predictably Irrational	Ariely	
+learn_business	Freakonomics	Levitt	
+learn_business	Superfreakonomics	Levitt	
+learn_business	The Tipping Point	Gladwell	
+learn_business	Outliers	Gladwell	
+learn_business	Blink	Gladwell	
+learn_business	David and Goliath	Gladwell	
+learn_science	A Brief History of Time	Hawking	
+learn_science	The Selfish Gene	Dawkins	
+learn_science	The Blind Watchmaker	Dawkins	
+learn_science	The Origin of Species	Darwin	
+learn_science	The Descent of Man	Darwin	
+learn_science	Cosmos	Sagan	
+learn_science	Pale Blue Dot	Sagan	
+learn_science	Surely You're Joking, Mr. Feynman!	Feynman	
+learn_science	The Feynman Lectures on Physics	Feynman	
+learn_science	Six Easy Pieces	Feynman	
+learn_science	The Elegant Universe	Greene	
+learn_science	The Fabric of the Cosmos	Greene	
+learn_science	A Short History of Nearly Everything	Bryson	
+learn_science	The Gene: An Intimate History	Mukherjee	
+learn_science	The Emperor of All Maladies	Mukherjee	
+learn_science	Guns, Germs, and Steel	Diamond	
+learn_science	Collapse	Diamond	
+learn_science	Sapiens: A Brief History of Humankind	Harari	
+learn_science	Homo Deus	Harari	
+learn_science	21 Lessons for the 21st Century	Harari	
+learn_science	The Structure of Scientific Revolutions	Kuhn	
+learn_science	Silent Spring	Carson	
+learn_science	The Immortal Life of Henrietta Lacks	Skloot	
+learn_science	The Double Helix	Watson	
+learn_science	What Is Life?	Schrödinger	
+learn_science	The Grand Design	Hawking	
+learn_science	The Hidden Reality	Greene	
+learn_science	Why We Sleep	Walker	
+learn_science	The Body Keeps the Score	van der Kolk	
+learn_science	Thinking in Systems	Meadows	
+learn_science	The Sixth Extinction	Kolbert	
+learn_science	The World Without Us	Weisman	
+learn_science	The Man Who Mistook His Wife for a Hat	Sacks	
+learn_science	An Anthropologist on Mars	Sacks	
+learn_general	The Republic	Plato	
+learn_general	Meditations	Aurelius	
+learn_general	Thus Spoke Zarathustra	Nietzsche	
+learn_general	Beyond Good and Evil	Nietzsche	
+learn_general	The Nicomachean Ethics	Aristotle	
+learn_general	The Prince	Machiavelli	
+learn_general	On the Origin of Inequality	Rousseau	
+learn_general	The Social Contract	Rousseau	
+learn_general	Critique of Pure Reason	Kant	
+learn_general	The Art of War	Sun Tzu	
+learn_general	The Book of Five Rings	Musashi	
+learn_general	Man's Search for Meaning	Frankl	
+learn_general	The Denial of Death	Becker	
+learn_general	The Hero with a Thousand Faces	Campbell	
+learn_general	A People's History of the United States	Zinn	
+learn_general	Guns, Germs, and Steel	Diamond	
+learn_general	The Guns of August	Tuchman	
+learn_general	The Rise and Fall of the Third Reich	Shirer	
+learn_general	Team of Rivals	Goodwin	
+learn_general	The Diary of a Young Girl	Frank	
+learn_general	Long Walk to Freedom	Mandela	
+learn_general	The Autobiography of Malcolm X	Malcolm X	
+learn_general	I Know Why the Caged Bird Sings	Angelou	
+learn_general	Educated	Westover	
+learn_general	Becoming	Obama	
+learn_general	The Year of Magical Thinking	Didion	
+learn_general	On Writing	King	
+learn_general	Bird by Bird	Lamott	
+learn_general	The Elements of Style	Strunk	
+learn_general	On Writing Well	Zinsser	

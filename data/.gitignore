@@ -1,0 +1,12 @@
+# Open Library dumps (multi-GB)
+/raw/*
+!/raw/.gitkeep
+
+# Generated CSV exports and resolver output
+/processed/*.csv
+!/processed/.gitkeep
+!/processed/curated_manifest.tsv
+
+# Postgres dumps for staging
+/dumps/*
+!/dumps/.gitkeep

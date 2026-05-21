@@ -32,8 +32,5 @@
 !/tmp/storage/
 !/tmp/storage/.keep
 
-# Large generated Open Library seed export (see scripts/export_ol_top_books.py)
-/db/books_top40k.csv
-
 # Ignore master key for decrypting credentials and more.
 /config/master.key

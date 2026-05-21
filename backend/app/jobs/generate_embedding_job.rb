@@ -9,6 +9,7 @@ class GenerateEmbeddingJob < ApplicationJob
   def perform(book_id)
     book = Book.find(book_id)
     parts = [ book.title, book.description ]
+    parts << "Category: #{book.category}" if book.category.present?
     parts << book.genres if book.genres.present?
     text = parts.join("\n\n")
     vector = EmbeddingService.embed!(text)

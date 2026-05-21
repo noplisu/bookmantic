@@ -1,47 +1,20 @@
 # frozen_string_literal: true
 
-require "csv"
+require_relative "../lib/book_csv_loader"
 
-def seed_csv_path
-  if ENV["BOOK_SEED_PATH"].present?
-    Rails.root.join(ENV["BOOK_SEED_PATH"])
-  elsif Rails.root.join("db/books_top40k.csv").file?
-    Rails.root.join("db/books_top40k.csv")
-  else
-    Rails.root.join("db/book_details.csv")
-  end
-end
-
-csv_path = seed_csv_path
+csv_path = BookCsvLoader.resolve_path
 unless csv_path.file?
-  raise "Missing seed CSV. Generate db/books_top40k.csv (see README) or add db/book_details.csv. " \
+  raise "Missing seed CSV. Generate data/processed/books_top45k.csv (see README) or add book_details.csv there. " \
         "Override with BOOK_SEED_PATH."
 end
 
-# Cap rows for quick dev (full export is ~40k). BOOK_SEED_FULL=1 uses entire file.
 seed_limit = if ActiveModel::Type::Boolean.new.cast(ENV["BOOK_SEED_FULL"])
   nil
 else
   Integer(ENV.fetch("BOOK_SEED_LIMIT", "200"))
 end
 
-rows = []
-CSV.foreach(csv_path, headers: true, liberal_parsing: true) do |row|
-  title = row["title"]&.strip&.delete("\0")
-  url = row["url"]&.strip&.delete("\0")
-  description = row["description"]&.strip&.delete("\0")
-  genres = row["genres"]&.strip&.delete("\0")
-
-  next if title.blank? || url.blank? || description.blank?
-
-  rows << {
-    "title" => title,
-    "url" => url,
-    "description" => description,
-    "genres" => genres.presence
-  }
-  break if seed_limit && rows.size >= seed_limit
-end
+rows = BookCsvLoader.load_rows(csv_path, limit: seed_limit)
 
 puts "Seeding #{rows.size} books from #{csv_path}#{seed_limit ? " (limit #{seed_limit}; BOOK_SEED_FULL=1 for full file)" : " (full file)"}…"
 

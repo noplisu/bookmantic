@@ -4,6 +4,7 @@ export interface Book {
   url: string;
   description: string;
   genres: string | null;
+  category: string | null;
   created_at: string;
   updated_at: string;
   embedding_ready: boolean;

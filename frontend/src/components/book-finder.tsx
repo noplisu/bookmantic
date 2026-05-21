@@ -33,6 +33,7 @@ async function parseJsonResponse(res: Response): Promise<unknown> {
 export function BookFinder() {
   const [query, setQuery] = useState("");
   const [books, setBooks] = useState<Book[]>([]);
+  const [hasSearched, setHasSearched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,6 +49,7 @@ export function BookFinder() {
       return;
     }
     setError(null);
+    setHasSearched(false);
     setLoading(true);
     setBooks([]);
     setSimilarFor(null);
@@ -71,6 +73,7 @@ export function BookFinder() {
         return;
       }
       setBooks(data as Book[]);
+      setHasSearched(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Network error.");
     } finally {
@@ -144,9 +147,19 @@ export function BookFinder() {
         </Alert>
       )}
 
+      {hasSearched && !loading && !error && books.length === 0 && (
+        <Alert status="warning">
+          <Alert.Title>No suggestions</Alert.Title>
+          <Alert.Description>
+            The API returned no matching books. Check that the database is seeded and embeddings
+            are complete (Sidekiq), or try a different description.
+          </Alert.Description>
+        </Alert>
+      )}
+
       {books.length > 0 && (
         <section className="flex flex-col gap-4">
-          <h2 className="text-lg font-medium">Suggestions</h2>
+          <h2 className="text-lg font-medium">Suggestions ({books.length})</h2>
           <ul className="flex flex-col gap-4">
             {books.map((book) => (
               <li key={book.id}>
@@ -154,6 +167,11 @@ export function BookFinder() {
                   <Card.Header className="flex flex-col items-start gap-1 px-4 pt-4 sm:flex-row sm:items-center sm:justify-between">
                     <Card.Title className="text-lg">{book.title}</Card.Title>
                     <div className="flex flex-wrap items-center gap-2">
+                      {book.category && (
+                        <Chip size="sm" variant="secondary">
+                          {book.category.replace(/_/g, " ")}
+                        </Chip>
+                      )}
                       {book.embedding_ready ? (
                         <Chip color="success" size="sm" variant="soft">
                           Indexed

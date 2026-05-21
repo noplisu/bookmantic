@@ -1,10 +1,3 @@
---
--- PostgreSQL database dump
---
-
--- Dumped from database version 16.13 (Debian 16.13-1.pgdg12+1)
--- Dumped by pg_dump version 16.13 (Debian 16.13-1.pgdg12+1)
-
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
@@ -15,6 +8,20 @@ SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
+
+--
+-- Name: public; Type: SCHEMA; Schema: -; Owner: -
+--
+
+-- *not* creating schema, since initdb creates it
+
+
+--
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON SCHEMA public IS '';
+
 
 --
 -- Name: vector; Type: EXTENSION; Schema: -; Owner: -
@@ -58,7 +65,8 @@ CREATE TABLE public.books (
     genres text,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    embedding public.vector(1536)
+    embedding public.vector(1536),
+    category character varying
 );
 
 
@@ -122,11 +130,10 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
--- Data: schema_migrations (needed after --schema-only dump without data rows)
+-- Name: index_books_on_category; Type: INDEX; Schema: public; Owner: -
 --
 
-INSERT INTO public.schema_migrations (version) VALUES ('20250513120000');
-INSERT INTO public.schema_migrations (version) VALUES ('20250514120000');
+CREATE INDEX index_books_on_category ON public.books USING btree (category);
 
 
 --
@@ -139,3 +146,11 @@ CREATE INDEX index_books_on_embedding_hnsw ON public.books USING hnsw (embedding
 --
 -- PostgreSQL database dump complete
 --
+
+SET search_path TO "$user", public;
+
+INSERT INTO "schema_migrations" (version) VALUES
+('20250519120000'),
+('20250514120000'),
+('20250513120000');
+
