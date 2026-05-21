@@ -1,10 +1,15 @@
 /**
- * Rails API base URL (no trailing slash).
- * Default matches backend `bin/rails server` on port 3000 while Next runs on 3001.
+ * Public Rails API base URL (no trailing slash), if set.
+ * When unset, the app uses same-origin `/api/*` (proxied by Next in production).
  */
-const DEFAULT_API_BASE = "http://localhost:3000";
-
 export function getApiBase(): string {
-  const base = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
-  return base || DEFAULT_API_BASE;
+  return process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ?? "";
+}
+
+/** Build a URL for a Rails API path (e.g. `/books/search`). */
+export function apiUrl(path: string): string {
+  const p = path.startsWith("/") ? path : `/${path}`;
+  const base = getApiBase();
+  if (!base) return `/api${p}`;
+  return `${base}${p}`;
 }

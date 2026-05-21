@@ -12,7 +12,7 @@ import {
   TextField,
 } from "@heroui/react";
 import { useCallback, useState } from "react";
-import { getApiBase } from "@/lib/api";
+import { apiUrl } from "@/lib/api";
 import type { Book } from "@/types/book";
 
 function truncate(text: string, max: number): string {
@@ -56,8 +56,7 @@ export function BookFinder() {
     setSimilar([]);
     setSimilarError(null);
     try {
-      const base = getApiBase();
-      const url = `${base}/books/search?q=${encodeURIComponent(q)}`;
+      const url = `${apiUrl("/books/search")}?q=${encodeURIComponent(q)}`;
       const res = await fetch(url, { headers: { Accept: "application/json" } });
       const data = await parseJsonResponse(res);
       if (!res.ok) {
@@ -87,8 +86,7 @@ export function BookFinder() {
     setSimilarError(null);
     setSimilarLoading(true);
     try {
-      const base = getApiBase();
-      const res = await fetch(`${base}/books/${book.id}/similar`, {
+      const res = await fetch(apiUrl(`/books/${book.id}/similar`), {
         headers: { Accept: "application/json" },
       });
       const data = await parseJsonResponse(res);

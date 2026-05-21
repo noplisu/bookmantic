@@ -6,6 +6,7 @@ Monorepo layout:
 - **[frontend/](frontend/)** — Next.js 16 + [HeroUI](https://www.heroui.com/) UI for book search and similar books. See [frontend/README.md](frontend/README.md).
 - **[data/](data/)** — Open Library raw dumps, processed CSV exports, and Postgres dumps. See [data/README.md](data/README.md).
 - **[scripts/](scripts/)** — Python ETL (`download_ol_dumps.py`, `export_ol_top_books.py`, `resolve_curated_works.py`, etc.).
+- **[deployment/](deployment/)** — Production Docker Compose (Caddy, GHCR, GitHub Actions deploy to a VPS). See [deployment/README.md](deployment/README.md).
 
 ## Quick start
 
