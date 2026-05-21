@@ -54,6 +54,8 @@ You do **not** need to clone the repo on the VPS. Only three files live under `/
 
 `GITHUB_TOKEN` in the workflow is used to **push** images from CI.
 
+The deploy job trusts your VPS SSH host key automatically (`ssh-keyscan`). If deploy still fails on SSH, confirm **Repository secrets** (not only Environment secrets) include `VPS_HOST`, `VPS_USER`, and `VPS_SSH_KEY` (private key matching `authorized_keys` on the VPS).
+
 ## First database (prepared dump)
 
 The prepared dump (~458MB) is not in git. On the VPS, create a data directory (separate from deployment config):
