@@ -166,6 +166,14 @@ BOOK_SEED_FULL=1 bin/rails books:import_csv
 
 Optional: `BOOK_IMPORT_UPDATE=1` updates `category` / `genres` on rows that already exist (does not re-embed).
 
+To backfill categories after a restore or merge (matches by URL, no re-embed):
+
+```bash
+bin/rails books:update_categories
+```
+
+Uses `data/processed/books_top45k.csv` by default (`BOOK_SEED_PATH` to override).
+
 #### Staging: ship a prepared database (skip re-seed + embeddings)
 
 After seeding and Sidekiq have filled **`books.embedding`** locally, dump once and restore on staging:
