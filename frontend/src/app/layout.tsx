@@ -52,9 +52,9 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${dmSans.variable} ${fraunces.variable} h-full`}
+      className={`${dmSans.variable} ${fraunces.variable} h-full w-full`}
     >
-      <body className="font-sans text-foreground flex min-h-full flex-col antialiased">
+      <body className="font-sans text-foreground flex min-h-full w-full flex-col antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>
