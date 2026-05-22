@@ -1,4 +1,4 @@
-# Bookmatic (Next.js + HeroUI)
+# Bookmantic (Next.js + HeroUI)
 
 Public UI for semantic book discovery. Proxies to the Rails API via `/api/*` in production.
 

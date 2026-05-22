@@ -13,7 +13,7 @@
 #
 # Environment:
 #   VPS_USER, VPS_HOST     Target (if user@host not passed)
-#   SSH_IDENTITY_FILE      Private key path (e.g. ~/.ssh/bookmatic_deploy)
+#   SSH_IDENTITY_FILE      Private key path (e.g. ~/.ssh/bookmantic_deploy)
 #   REMOTE_DEPLOY_DIR      Remote directory (default: /opt/semantic-search-rails/deployment)
 set -euo pipefail
 

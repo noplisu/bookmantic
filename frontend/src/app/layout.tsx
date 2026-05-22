@@ -16,28 +16,28 @@ const fraunces = Fraunces({
   weight: ["400", "500", "600", "700"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://bookmatic.com";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://bookmantic.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Bookmatic — find books by what you want to read",
-    template: "%s · Bookmatic",
+    default: "Bookmantic — find books by what you want to read",
+    template: "%s · Bookmantic",
   },
   description:
-    "Describe the kind of book you want in plain language. Bookmatic matches by meaning, not keywords — powered by semantic search.",
+    "Describe the kind of book you want in plain language. Bookmantic matches by meaning, not keywords — powered by semantic search.",
   openGraph: {
     type: "website",
     locale: "en_US",
     url: siteUrl,
-    siteName: "Bookmatic",
-    title: "Bookmatic — semantic book discovery",
+    siteName: "Bookmantic",
+    title: "Bookmantic — semantic book discovery",
     description:
       "Describe what you want to read. Get book suggestions matched by meaning, not keywords.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Bookmatic — semantic book discovery",
+    title: "Bookmantic — semantic book discovery",
     description:
       "Describe what you want to read. Get book suggestions matched by meaning, not keywords.",
   },

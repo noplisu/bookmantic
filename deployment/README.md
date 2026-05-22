@@ -142,7 +142,7 @@ Ensure `deployment/.env` on the VPS uses `:latest` (or pin SHAs in `.env` for re
 - [ ] `POST https://<DOMAIN>/api/books` returns **404** or **405** (not **201**) — write API is disabled in production
 - [ ] Rapid searches eventually return **429** (Rack::Attack in production)
 - [ ] Open Library links open correctly; **Buy on Amazon** appears only after `AMAZON_ASSOCIATE_TAG` is set
-- [ ] LinkedIn link preview shows **Bookmatic** title and description (Open Graph)
+- [ ] LinkedIn link preview shows **Bookmantic** title and description (Open Graph)
 - [ ] Record a 15–30s screen demo for social posts
 
 **Optional env for frontend image builds:** `NEXT_PUBLIC_SITE_URL=https://your-domain` (Open Graph `metadataBase`).
