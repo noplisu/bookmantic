@@ -1,6 +1,6 @@
-# Book finder (Next.js + HeroUI)
+# Bookmatic (Next.js + HeroUI)
 
-UI for the Rails API in `../backend/`: semantic search (`GET /books/search`) and similar books (`GET /books/:id/similar`).
+Public UI for semantic book discovery. Proxies to the Rails API via `/api/*` in production.
 
 ## Setup
 

@@ -217,15 +217,21 @@ Without Sidekiq, new books stay without an `embedding` until jobs are run manual
 
 ## API (JSON)
 
-Use header `Content-Type: application/json` for JSON bodies on `POST`.
+**Production** exposes read-only book discovery: `GET /books/search`, `GET /books/:id/similar`, and `GET /up`. Write routes (`POST /books`, etc.) are available in **development/test** only.
+
+Use header `Content-Type: application/json` for JSON bodies on `POST` (development).
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/books` | List books |
-| `GET` | `/books/:id` | Single book |
-| `POST` | `/books` | Create (`book: { title, url, description, genres? }`) — enqueues embedding job |
 | `GET` | `/books/search?q=text` | Semantic match by what you want to read (**5** results; requires `OPENAI_API_KEY`) |
 | `GET` | `/books/:id/similar` | **5** books similar to this one (uses stored embedding; **422** if not ready) |
+| `GET` | `/books` | List books (development/test) |
+| `GET` | `/books/:id` | Single book (development/test) |
+| `POST` | `/books` | Create (`book: { title, url, description, genres? }`) — enqueues embedding job (development/test) |
+
+**Production rate limits** (Rack::Attack, per IP): search ~30/5min, similar ~60/5min. Override via `RACK_ATTACK_*` env vars (see `.env.example`).
+
+JSON responses include `purchase_url` when `AMAZON_ASSOCIATE_TAG` is set (Amazon search link from title). A future improvement is ISBN-based `/dp/` links from Open Library edition data (see project plan).
 
 Examples:
 

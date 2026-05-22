@@ -4,10 +4,162 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-dm-sans);
+  --font-display: var(--font-fraunces);
+
+  --color-bm-ink: #0c0a0f;
+  --color-bm-plum: #1a1224;
+  --color-bm-violet: #2d1f3d;
+  --color-bm-gold: #e8b86d;
+  --color-bm-amber: #d4894a;
+  --color-bm-rose: #c45c6e;
+  --color-bm-cream: #f6f0e6;
+  --color-bm-paper: #ebe3d4;
 }
 
+/* --- Atmosphere --- */
 body {
   min-height: 100%;
+}
+
+.bm-mesh {
+  background-color: var(--color-bm-cream);
+  background-image:
+    radial-gradient(ellipse 120% 80% at 10% -20%, rgb(232 184 109 / 0.35), transparent 50%),
+    radial-gradient(ellipse 90% 60% at 95% 0%, rgb(196 92 110 / 0.2), transparent 45%),
+    radial-gradient(ellipse 70% 50% at 50% 100%, rgb(45 31 61 / 0.08), transparent 55%);
+}
+
+.dark .bm-mesh {
+  background-color: var(--color-bm-ink);
+  background-image:
+    radial-gradient(ellipse 100% 70% at 15% -10%, rgb(232 184 109 / 0.12), transparent 50%),
+    radial-gradient(ellipse 80% 55% at 100% 15%, rgb(196 92 110 / 0.1), transparent 45%),
+    radial-gradient(ellipse 60% 40% at 40% 90%, rgb(45 31 61 / 0.5), transparent 50%),
+    radial-gradient(ellipse 50% 30% at 80% 80%, rgb(212 137 74 / 0.06), transparent 40%);
+}
+
+.bm-grain::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.dark .bm-grain::before {
+  opacity: 0.06;
+}
+
+/* --- Typography --- */
+.font-display {
+  font-family: var(--font-fraunces), Georgia, serif;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-bm-gold) 0%, var(--color-bm-amber) 45%, var(--color-bm-rose) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* --- Surfaces --- */
+.glass-panel {
+  border: 1px solid rgb(232 184 109 / 0.15);
+  background: rgb(255 255 255 / 0.72);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.8) inset,
+    0 24px 48px -12px rgb(12 10 15 / 0.12);
+  backdrop-filter: blur(16px);
+}
+
+.dark .glass-panel {
+  border-color: rgb(232 184 109 / 0.12);
+  background: rgb(26 18 36 / 0.65);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.04) inset,
+    0 24px 48px -12px rgb(0 0 0 / 0.45);
+}
+
+.book-card-surface {
+  border: 1px solid rgb(232 184 109 / 0.12);
+  background: rgb(255 255 255 / 0.55);
+  box-shadow: 0 12px 32px -16px rgb(12 10 15 / 0.1);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.dark .book-card-surface {
+  background: rgb(30 22 40 / 0.75);
+  border-color: rgb(232 184 109 / 0.1);
+  box-shadow: 0 12px 32px -16px rgb(0 0 0 / 0.35);
+}
+
+.book-card-surface:hover {
+  transform: translateY(-2px);
+  border-color: rgb(232 184 109 / 0.28);
+  box-shadow: 0 20px 40px -16px rgb(12 10 15 / 0.18);
+}
+
+.dark .book-card-surface:hover {
+  box-shadow: 0 20px 40px -16px rgb(0 0 0 / 0.5);
+}
+
+.similar-panel-surface {
+  border: 1px solid rgb(232 184 109 / 0.2);
+  background: linear-gradient(135deg, rgb(232 184 109 / 0.08), rgb(196 92 110 / 0.05));
+}
+
+.dark .similar-panel-surface {
+  background: linear-gradient(135deg, rgb(232 184 109 / 0.06), rgb(45 31 61 / 0.4));
+}
+
+.chip-example {
+  border: 1px solid rgb(232 184 109 / 0.25);
+  background: rgb(232 184 109 / 0.1);
+  color: inherit;
+  transition: all 0.2s ease;
+}
+
+.chip-example:hover {
+  border-color: rgb(232 184 109 / 0.5);
+  background: rgb(232 184 109 / 0.2);
+  transform: translateY(-1px);
+}
+
+.dark .chip-example {
+  background: rgb(232 184 109 / 0.08);
+}
+
+@keyframes bm-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bm-fade-up {
+  animation: bm-fade-up 0.5s ease forwards;
+}
+
+@keyframes bm-pulse-glow {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.bm-orb {
+  animation: bm-pulse-glow 8s ease-in-out infinite;
 }

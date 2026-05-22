@@ -2,6 +2,7 @@ export interface Book {
   id: number;
   title: string;
   url: string;
+  purchase_url?: string | null;
   description: string;
   genres: string | null;
   category: string | null;

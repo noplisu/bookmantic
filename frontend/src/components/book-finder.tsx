@@ -3,22 +3,18 @@
 import {
   Alert,
   Button,
-  Card,
-  Chip,
   Label,
-  Link,
   Spinner,
   TextArea,
   TextField,
 } from "@heroui/react";
-import { useCallback, useState } from "react";
+import { motion } from "framer-motion";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl } from "@/lib/api";
+import { EXAMPLE_QUERIES } from "@/lib/book-display";
+import { BookCard } from "@/components/book-card";
+import { SimilarBooksPanel } from "@/components/similar-books-panel";
 import type { Book } from "@/types/book";
-
-function truncate(text: string, max: number): string {
-  if (text.length <= max) return text;
-  return `${text.slice(0, max).trim()}…`;
-}
 
 async function parseJsonResponse(res: Response): Promise<unknown> {
   const text = await res.text();
@@ -29,6 +25,19 @@ async function parseJsonResponse(res: Response): Promise<unknown> {
     return { error: text || `HTTP ${res.status}` };
   }
 }
+
+const listVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
+};
 
 export function BookFinder() {
   const [query, setQuery] = useState("");
@@ -41,216 +50,231 @@ export function BookFinder() {
   const [similar, setSimilar] = useState<Book[]>([]);
   const [similarLoading, setSimilarLoading] = useState(false);
   const [similarError, setSimilarError] = useState<string | null>(null);
+  const similarPanelRef = useRef<HTMLDivElement | null>(null);
 
-  const search = useCallback(async () => {
-    const q = query.trim();
-    if (!q) {
-      setError("Describe what you would like to read.");
-      return;
-    }
-    setError(null);
-    setHasSearched(false);
-    setLoading(true);
-    setBooks([]);
+  const closeSimilar = useCallback(() => {
     setSimilarFor(null);
     setSimilar([]);
     setSimilarError(null);
-    try {
-      const url = `${apiUrl("/books/search")}?q=${encodeURIComponent(q)}`;
-      const res = await fetch(url, { headers: { Accept: "application/json" } });
-      const data = await parseJsonResponse(res);
-      if (!res.ok) {
-        const msg =
-          typeof data === "object" && data !== null && "error" in data
-            ? String((data as { error: unknown }).error)
-            : `Search failed (${res.status})`;
-        setError(msg);
-        return;
-      }
-      if (!Array.isArray(data)) {
-        setError("Unexpected response from server.");
-        return;
-      }
-      setBooks(data as Book[]);
-      setHasSearched(true);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Network error.");
-    } finally {
-      setLoading(false);
-    }
-  }, [query]);
-
-  const loadSimilar = useCallback(async (book: Book) => {
-    setSimilarFor(book);
-    setSimilar([]);
-    setSimilarError(null);
-    setSimilarLoading(true);
-    try {
-      const res = await fetch(apiUrl(`/books/${book.id}/similar`), {
-        headers: { Accept: "application/json" },
-      });
-      const data = await parseJsonResponse(res);
-      if (!res.ok) {
-        const msg =
-          typeof data === "object" && data !== null && "error" in data
-            ? String((data as { error: unknown }).error)
-            : `Similar books failed (${res.status})`;
-        setSimilarError(msg);
-        return;
-      }
-      if (!Array.isArray(data)) {
-        setSimilarError("Unexpected response from server.");
-        return;
-      }
-      setSimilar(data as Book[]);
-    } catch (e) {
-      setSimilarError(e instanceof Error ? e.message : "Network error.");
-    } finally {
-      setSimilarLoading(false);
-    }
+    setSimilarLoading(false);
   }, []);
 
+  const runSearch = useCallback(
+    async (q: string) => {
+      const trimmed = q.trim();
+      if (!trimmed) {
+        setError("Describe what you would like to read.");
+        return;
+      }
+      setError(null);
+      setHasSearched(false);
+      setLoading(true);
+      setBooks([]);
+      closeSimilar();
+      try {
+        const url = `${apiUrl("/books/search")}?q=${encodeURIComponent(trimmed)}`;
+        const res = await fetch(url, { headers: { Accept: "application/json" } });
+        const data = await parseJsonResponse(res);
+        if (!res.ok) {
+          const msg =
+            typeof data === "object" && data !== null && "error" in data
+              ? String((data as { error: unknown }).error)
+              : `Search failed (${res.status})`;
+          setError(msg);
+          return;
+        }
+        if (!Array.isArray(data)) {
+          setError("Unexpected response from server.");
+          return;
+        }
+        setBooks(data as Book[]);
+        setHasSearched(true);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Network error.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [closeSimilar],
+  );
+
+  const search = useCallback(() => runSearch(query), [query, runSearch]);
+
+  const loadSimilar = useCallback(
+    async (book: Book) => {
+      if (similarFor?.id === book.id) {
+        closeSimilar();
+        return;
+      }
+      setSimilarFor(book);
+      setSimilar([]);
+      setSimilarError(null);
+      setSimilarLoading(true);
+      try {
+        const res = await fetch(apiUrl(`/books/${book.id}/similar`), {
+          headers: { Accept: "application/json" },
+        });
+        const data = await parseJsonResponse(res);
+        if (!res.ok) {
+          const msg =
+            typeof data === "object" && data !== null && "error" in data
+              ? String((data as { error: unknown }).error)
+              : `Similar books failed (${res.status})`;
+          setSimilarError(msg);
+          return;
+        }
+        if (!Array.isArray(data)) {
+          setSimilarError("Unexpected response from server.");
+          return;
+        }
+        setSimilar(data as Book[]);
+      } catch (e) {
+        setSimilarError(e instanceof Error ? e.message : "Network error.");
+      } finally {
+        setSimilarLoading(false);
+      }
+    },
+    [similarFor?.id, closeSimilar],
+  );
+
+  useEffect(() => {
+    if (similarFor && similarPanelRef.current) {
+      similarPanelRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [similarFor, similarLoading]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      search();
+    }
+  };
+
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-semibold tracking-tight">Book finder</h1>
-        <p className="text-default-500 text-sm">
-          Describe what you want to read. Results come from the Rails API (
-          <code className="text-xs">GET /books/search</code>, top 5).
+    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 px-4 pb-12">
+      <motion.header
+        className="flex flex-col gap-4 pt-2 text-center sm:text-left"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        <p className="text-default-500 text-sm font-medium tracking-[0.2em] uppercase">
+          Semantic discovery
         </p>
-      </header>
+        <h1 className="font-display text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl">
+          Find your next book by{" "}
+          <span className="text-gradient italic">feeling</span>, not keywords
+        </h1>
+        <p className="text-default-500 mx-auto max-w-xl text-base leading-relaxed sm:mx-0 sm:text-lg">
+          Describe the mood, ideas, or world you want. We match thousands of titles by meaning.
+        </p>
+      </motion.header>
 
-      <TextField className="w-full">
-        <Label>What would you like to read?</Label>
-        <TextArea
-          rows={5}
-          placeholder="e.g. hopeful stories about friendship, or practical distributed systems"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-      </TextField>
-      <p className="text-default-400 -mt-4 text-xs">Natural language works best.</p>
+      <motion.div
+        className="glass-panel rounded-3xl p-6 sm:p-8"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55, delay: 0.1, ease: "easeOut" }}
+      >
+        <TextField className="w-full">
+          <Label className="text-default-600 mb-2 text-sm font-medium">
+            What would you like to read?
+          </Label>
+          <TextArea
+            rows={4}
+            placeholder="A quiet novel about reinvention, or a sharp guide to system design…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="min-h-[120px] text-base"
+          />
+        </TextField>
+        <p className="text-default-400 mt-3 text-xs">
+          Enter to search · Shift+Enter for a new line
+        </p>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Button variant="primary" isDisabled={loading} onPress={search}>
-          {loading && <Spinner color="current" size="sm" />}
-          Find books
-        </Button>
-      </div>
+        <div className="mt-5 flex flex-wrap gap-2">
+          {EXAMPLE_QUERIES.map((example) => (
+            <button
+              key={example.label}
+              type="button"
+              className="chip-example rounded-full px-4 py-1.5 text-sm font-medium"
+              onClick={() => {
+                setQuery(example.query);
+                runSearch(example.query);
+              }}
+            >
+              {example.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-6">
+          <Button
+            variant="primary"
+            size="lg"
+            isDisabled={loading}
+            onPress={search}
+            className="w-full bg-gradient-to-r from-[#e8b86d] via-[#d4894a] to-[#c45c6e] font-semibold text-[#0c0a0f] shadow-lg shadow-[#e8b86d]/20 sm:w-auto sm:min-w-[200px]"
+          >
+            {loading ? <Spinner color="current" size="sm" /> : null}
+            {loading ? "Searching…" : "Find books"}
+          </Button>
+        </div>
+      </motion.div>
 
       {error && (
-        <Alert status="danger">
+        <Alert status="danger" className="rounded-2xl">
           <Alert.Title>Could not search</Alert.Title>
           <Alert.Description>{error}</Alert.Description>
         </Alert>
       )}
 
       {hasSearched && !loading && !error && books.length === 0 && (
-        <Alert status="warning">
-          <Alert.Title>No suggestions</Alert.Title>
+        <Alert status="warning" className="rounded-2xl">
+          <Alert.Title>No matches</Alert.Title>
           <Alert.Description>
-            The API returned no matching books. Check that the database is seeded and embeddings
-            are complete (Sidekiq), or try a different description.
+            Try a broader description — mood, genre, topic, or setting — and search again.
           </Alert.Description>
         </Alert>
       )}
 
       {books.length > 0 && (
-        <section className="flex flex-col gap-4">
-          <h2 className="text-lg font-medium">Suggestions ({books.length})</h2>
-          <ul className="flex flex-col gap-4">
-            {books.map((book) => (
-              <li key={book.id}>
-                <Card className="p-0">
-                  <Card.Header className="flex flex-col items-start gap-1 px-4 pt-4 sm:flex-row sm:items-center sm:justify-between">
-                    <Card.Title className="text-lg">{book.title}</Card.Title>
-                    <div className="flex flex-wrap items-center gap-2">
-                      {book.category && (
-                        <Chip size="sm" variant="secondary">
-                          {book.category.replace(/_/g, " ")}
-                        </Chip>
-                      )}
-                      {book.embedding_ready ? (
-                        <Chip color="success" size="sm" variant="soft">
-                          Indexed
-                        </Chip>
-                      ) : (
-                        <Chip color="warning" size="sm" variant="soft">
-                          Embedding pending
-                        </Chip>
-                      )}
-                      {typeof book.cosine_similarity === "number" && (
-                        <Chip size="sm" variant="tertiary">
-                          similarity {(book.cosine_similarity * 100).toFixed(1)}%
-                        </Chip>
-                      )}
-                    </div>
-                  </Card.Header>
-                  <Card.Content className="px-4 pb-2">
-                    <Card.Description className="text-default-600 whitespace-pre-wrap">
-                      {truncate(book.description, 420)}
-                    </Card.Description>
-                    {book.genres && (
-                      <p className="text-default-400 mt-2 font-mono text-xs">{book.genres}</p>
-                    )}
-                  </Card.Content>
-                  <Card.Footer className="flex flex-wrap gap-3 px-4 pb-4">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onPress={() => loadSimilar(book)}
-                      isDisabled={!book.embedding_ready}
-                    >
-                      Similar books
-                    </Button>
-                    <Link href={book.url} target="_blank" rel="noreferrer" className="text-sm">
-                      Goodreads
-                    </Link>
-                  </Card.Footer>
-                </Card>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {similarFor && (
-        <section className="border-default-200 flex flex-col gap-3 rounded-xl border p-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-lg font-medium">
-              Similar to <span className="text-primary">&ldquo;{similarFor.title}&rdquo;</span>
-            </h2>
-            <Button size="sm" variant="ghost" onPress={() => setSimilarFor(null)}>
-              Close
-            </Button>
+        <section className="flex flex-col gap-5">
+          <div className="flex items-baseline justify-between gap-4">
+            <h2 className="font-display text-2xl font-medium">Your matches</h2>
+            <span className="text-default-400 text-sm tabular-nums">{books.length} books</span>
           </div>
-          {similarLoading && (
-            <div className="flex items-center gap-2 text-sm">
-              <Spinner size="sm" />
-              Loading…
-            </div>
-          )}
-          {similarError && (
-            <Alert status="danger">
-              <Alert.Title>Similar books</Alert.Title>
-              <Alert.Description>{similarError}</Alert.Description>
-            </Alert>
-          )}
-          {!similarLoading && similar.length > 0 && (
-            <ul className="flex flex-col gap-3">
-              {similar.map((b) => (
-                <li key={b.id} className="border-default-100 rounded-lg border p-3">
-                  <p className="font-medium">{b.title}</p>
-                  <p className="text-default-500 mt-1 text-sm">{truncate(b.description, 200)}</p>
-                  <Link href={b.url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm">
-                    Goodreads
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
+          <motion.ul
+            className="flex flex-col gap-5"
+            variants={listVariants}
+            initial="hidden"
+            animate="show"
+          >
+            {books.map((book, index) => (
+              <motion.li key={book.id} variants={itemVariants}>
+                <BookCard
+                  book={book}
+                  rank={index + 1}
+                  onSimilar={loadSimilar}
+                  similarActive={similarFor?.id === book.id}
+                />
+                {similarFor?.id === book.id && (
+                  <div ref={similarPanelRef}>
+                    <SimilarBooksPanel
+                      book={similarFor}
+                      similar={similar}
+                      loading={similarLoading}
+                      error={similarError}
+                      onClose={closeSimilar}
+                    />
+                  </div>
+                )}
+              </motion.li>
+            ))}
+          </motion.ul>
         </section>
       )}
-    </div>
+    </main>
   );
 }

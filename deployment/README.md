@@ -65,20 +65,27 @@ ssh deploy@YOUR_VPS_IP 'mkdir -p /opt/semantic-search-rails/data/dumps'
 scp data/dumps/semantic_search_rails_prepared.dump deploy@YOUR_VPS_IP:/opt/semantic-search-rails/data/dumps/
 ```
 
-Start Postgres, then restore:
+Start Postgres, then restore.
+
+Production uses **PostgreSQL 17** (`pgvector/pgvector:pg17`). Dumps must be made with **pg_dump 17+** (format 1.15). If `pg_restore` errors on `transaction_timeout`, the dump is PG17 but the server was PG16 — upgrade Postgres or re-dump with a matching client.
 
 ```bash
 cd /opt/semantic-search-rails/deployment
 docker compose up -d postgres
-# Wait until healthy, then:
-docker compose run --rm \
-  --entrypoint bin/db-restore \
-  -e RAILS_ENV=production \
-  -e BOOK_DATA_ROOT=/data \
-  -e DATABASE_HOST=postgres \
+# Wait until healthy, then (from deployment/.env):
+set -a && source .env && set +a
+docker run --rm \
+  --network deployment_default \
+  -e PGPASSWORD="${DATABASE_PASSWORD}" \
   -v /opt/semantic-search-rails/data:/data:ro \
-  backend
+  postgres:17 \
+  pg_restore -h postgres -p 5432 -U "${DATABASE_USER:-postgres}" \
+  -d "${DATABASE_NAME:-semantic_search_rails_production}" \
+  --clean --if-exists --no-owner --no-acl \
+  /data/dumps/semantic_search_rails_prepared.dump
 ```
+
+A ~450MB dump with tens of thousands of vector rows can take **10–30+ minutes**; little output until it finishes is normal.
 
 Bring up the full stack (or let the deploy workflow do it):
 
@@ -126,3 +133,16 @@ On push to `main`, `.github/workflows/deploy.yml`:
 3. SSHs to the VPS and runs `docker compose pull` + `docker compose up -d` in `/opt/semantic-search-rails/deployment`.
 
 Ensure `deployment/.env` on the VPS uses `:latest` (or pin SHAs in `.env` for reproducibility).
+
+## Showcase pre-flight (before LinkedIn / public launch)
+
+- [ ] `https://<DOMAIN>` loads with valid HTTPS (grey Cloudflare or DNS-only recommended first)
+- [ ] Three example searches return five results (try the chips on the homepage)
+- [ ] **Similar books** works on a result
+- [ ] `POST https://<DOMAIN>/api/books` returns **404** or **405** (not **201**) — write API is disabled in production
+- [ ] Rapid searches eventually return **429** (Rack::Attack in production)
+- [ ] Open Library links open correctly; **Buy on Amazon** appears only after `AMAZON_ASSOCIATE_TAG` is set
+- [ ] LinkedIn link preview shows **Bookmatic** title and description (Open Graph)
+- [ ] Record a 15–30s screen demo for social posts
+
+**Optional env for frontend image builds:** `NEXT_PUBLIC_SITE_URL=https://your-domain` (Open Graph `metadataBase`).

@@ -76,6 +76,7 @@ class BooksController < ApplicationController
       id: book.id,
       title: book.title,
       url: book.url,
+      purchase_url: AmazonLinkBuilder.search_url_for(title: book.title),
       description: book.description,
       genres: book.genres,
       category: book.category,
