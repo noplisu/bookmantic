@@ -22,7 +22,7 @@ export function SiteHeader() {
       <div className="flex items-center gap-3">
         <LogoMark size={40} className="shadow-lg" />
         <span className="font-display text-xl font-semibold tracking-tight">
-          Book<span className="text-gradient">matic</span>
+          Book<span className="text-gradient">mantic</span>
         </span>
       </div>
       {isClient && (
