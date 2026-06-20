@@ -106,7 +106,7 @@ jobs:
           deployment/sync-to-vps.sh --config-only
 
       - name: Deploy containers on VPS
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v1.2.5
         env:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
           REGISTRY_OWNER: ${{ steps.owner.outputs.value }}
