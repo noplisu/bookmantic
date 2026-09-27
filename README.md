@@ -1,4 +1,4 @@
-# semantic-search-rails
+# Bookmantic
 
 Monorepo layout:
 
