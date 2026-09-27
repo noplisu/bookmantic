@@ -1,6 +1,6 @@
 # Bookmantic
 
-Proof of concept for [noplisu.com](https://noplisu.com) and portfolio [github.com/fractalsoft](https://github.com/fractalsoft): a **Rails API** for discovering books by natural-language “what I want to read,” using PostgreSQL (**pgvector**), the [**neighbor**](https://github.com/ankane/neighbor) gem, and **OpenAI `text-embedding-3-small`** embeddings (1536 dimensions).
+**Rails API** for discovering books by natural-language “what I want to read,” using PostgreSQL (**pgvector**), the [**neighbor**](https://github.com/ankane/neighbor) gem, and **OpenAI `text-embedding-3-small`** embeddings (1536 dimensions).
 
 Example intent: a query like **“dystopian surveillance state”** can surface books whose descriptions never use those exact words, thanks to cosine similarity in embedding space.
 
